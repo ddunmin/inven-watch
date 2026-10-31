@@ -1,17 +1,23 @@
-import os, re, json, pathlib, sys
+import os, re, json, pathlib, sys, html
 from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
 URL = "https://www.inven.co.kr/board/fifaonline4/3145?category=%EC%BF%A0%ED%8F%B0"
+COUPON_BOX = "https://box.coupon.nexon.com/CouponBox"
 STATE = pathlib.Path("last_id.json")
 TG_TOKEN = os.environ["TG_TOKEN"]
 TG_CHAT = os.environ["TG_CHAT"]
 
-def notify(text):
+def notify(text, code=None):
+    msg = html.escape(text)
+    if code:
+        msg += f"\n\n쿠폰: <code>{html.escape(code)}</code>"
+    msg += f"\n\n넥슨 쿠폰함: {COUPON_BOX}"
     r = requests.post(
         f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-        data={"chat_id": TG_CHAT, "text": text},
+        data={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML",
+              "disable_web_page_preview": "true"},
         timeout=15,
     )
     r.raise_for_status()
@@ -38,6 +44,7 @@ else:
     new = sorted(i for i in posts if i > last)
     for pid in new:
         title, link = posts[pid]
-        notify(f"{title}\n{link}")
+        code = title.replace("[쿠폰]", "", 1).strip()
+        notify(f"{title}\n{link}", code)
     if new:
         STATE.write_text(json.dumps({"id": max(new)}))
