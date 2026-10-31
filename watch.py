@@ -4,7 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 
 URL = "https://www.inven.co.kr/board/fifaonline4/3145?category=%EC%BF%A0%ED%8F%B0"
-COUPON_BOX = "https://box.coupon.nexon.com/CouponBox"
+COUPON_BOX = "https://fconline.nexon.com/coupon"
+MAIN_PAGE = "https://fconline.nexon.com/main/index"
 STATE = pathlib.Path("last_id.json")
 TG_TOKEN = os.environ["TG_TOKEN"]
 TG_CHAT = os.environ["TG_CHAT"]
@@ -13,7 +14,8 @@ def notify(text, code=None):
     msg = html.escape(text)
     if code:
         msg += f"\n\n쿠폰: <code>{html.escape(code)}</code>"
-    msg += f"\n\n넥슨 쿠폰함: {COUPON_BOX}"
+    msg += f"\n\n쿠폰 등록: {COUPON_BOX}"
+    msg += f"\n(안 열리면) 메인: {MAIN_PAGE}"
     r = requests.post(
         f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
         data={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML",
